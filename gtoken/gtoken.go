@@ -14,6 +14,7 @@ import (
 	"github.com/gogf/gf/util/grand"
 	"net/http"
 	"strings"
+	"sync"
 )
 
 const (
@@ -77,6 +78,9 @@ type GfToken struct {
 	AuthBeforeFunc func(r *ghttp.Request) bool
 	// 认证返回方法
 	AuthAfterFunc func(r *ghttp.Request, respData Resp)
+
+	// 用户缓存信息读写锁
+	mutexUserCache sync.Mutex
 }
 
 // InitConfig 初始化配置信息
@@ -423,6 +427,8 @@ func (m *GfToken) genToken(userKey string, data interface{}) Resp {
 		return token
 	}
 
+	m.mutexUserCache.Lock()
+	defer m.mutexUserCache.Unlock()
 	cacheKey := m.CacheKey + userKey
 	userCache := g.Map{
 		"userKey":     userKey,
@@ -469,6 +475,9 @@ func (m *GfToken) validToken(token string) Resp {
 
 // getToken 通过userKey获取Token
 func (m *GfToken) getToken(userKey string) Resp {
+	m.mutexUserCache.Lock()
+	defer m.mutexUserCache.Unlock()
+
 	cacheKey := m.CacheKey + userKey
 
 	userCacheResp := m.getCache(cacheKey)
