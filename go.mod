@@ -1,4 +1,4 @@
-module github.com/goflyfox/gtoken
+module github.com/xiaojunjun-li/gtoken
 
 require github.com/gogf/gf v1.16.6
 
